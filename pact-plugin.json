@@ -1,0 +1,18 @@
+{
+  "manifestVersion": 1,
+  "pluginInterfaceVersion": 1,
+  "name": "avro-schema-as-contract",
+  "version": "0.0.1-SNAPSHOT",
+  "executableType": "exec",
+  "entryPoint": "bin/pact-plugin-avro-schema-as-contract",
+  "entryPoints": {
+    "windows": "bin/pact-plugin-avro-schema-as-contract.bat"
+  },
+  "dependencies": [
+    {
+      "name": "jvm",
+      "version": "17+",
+      "type": "OSPackage"
+    }
+  ]
+}
