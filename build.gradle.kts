@@ -39,7 +39,7 @@ application {
 
 distributions {
     main {
-        distributionBaseName = "avro-schema-as-contract-${version}"
+        distributionBaseName = "avro-schema-as-pact-contract-${version}"
         contents {
             from("${project.layout.projectDirectory}/pact-plugin.json") {
                 into("")
