@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "pluginInterfaceVersion": 1,
   "name": "avro-schema-as-contract",
-  "version": "0.0.1-SNAPSHOT",
+  "version": "0.0.1",
   "executableType": "exec",
   "entryPoint": "bin/pact-plugin-avro-schema-as-contract",
   "entryPoints": {
