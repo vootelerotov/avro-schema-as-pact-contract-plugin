@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "io.github.vootelerotov"
-version = "0.0.2-SNAPSHOT"
+version = "0.0.2"
 
 repositories {
     mavenCentral()
