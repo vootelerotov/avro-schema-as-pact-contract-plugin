@@ -50,7 +50,7 @@ class PactPluginService: PactPluginGrpc.PactPluginImplBase() {
   ) {
     logger.info { "Init request from ${request.implementation}/${request.version}" }
     val response = Plugin.InitPluginResponse.newBuilder().apply {
-      logger.info { "Registering 'application/avro-message-schema-json' as supported contet type " }
+      logger.info { "Registering 'application/avro-message-schema-json' as supported content type " }
       this.addCatalogueBuilder()
         .setType(CONTENT_MATCHER)
         .setKey("avro-schema-as-contract")
