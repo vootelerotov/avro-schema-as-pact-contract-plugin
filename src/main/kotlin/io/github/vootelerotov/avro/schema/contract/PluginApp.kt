@@ -53,7 +53,7 @@ class PactPluginService: PactPluginGrpc.PactPluginImplBase() {
       logger.info { "Registering 'application/avro-message-schema-json' as supported content type " }
       this.addCatalogueBuilder()
         .setType(CONTENT_MATCHER)
-        .setKey("avro-schema-as-contract")
+        .setKey("avro-schema-as-pact-contract")
         .putValues("content-types", "application/avro-message-schema-json")
     }.build()
     responseObserver.onNext(response)
@@ -104,7 +104,7 @@ class PactPluginService: PactPluginGrpc.PactPluginImplBase() {
         .setContentType("application/avro-message-schema-json")
       )
       .setPluginConfiguration(PluginConfiguration.newBuilder()
-        .setPactConfiguration(Struct.newBuilder().putFields("plugin", stringValue("avro-schema-as-contract")))
+        .setPactConfiguration(Struct.newBuilder().putFields("plugin", stringValue("avro-schema-as-pact-contract")))
         .setInteractionConfiguration(Struct.newBuilder().putFields("schema", rawSchema).build())
         .build()
       ).build()

@@ -21,7 +21,7 @@ The contract is then that the producer will send messages that can be deserializ
 Make sure you have the Pact plugin installed in your project. On the consider side, create the pact as follow:
 ```java
 V4Pact pact = new PactBuilder(consumer, provider, V4)
-        .usingPlugin("avro-schema-as-contract")
+        .usingPlugin("avro-schema-as-pact-contract")
         .expectsToReceive(pulsarConsumerAnnotation.topic(), "core/interaction/message")
         .with(Map.of(
             "message.contents", Map.of(
