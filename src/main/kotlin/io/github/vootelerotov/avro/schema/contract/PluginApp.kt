@@ -24,6 +24,12 @@ import org.apache.avro.generic.GenericDatumReader
 import org.apache.avro.generic.GenericRecord
 import org.apache.avro.io.DecoderFactory
 import java.util.UUID
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.Json.Default.decodeFromJsonElement
+import kotlinx.serialization.json.Json.Default.decodeFromString
+import kotlinx.serialization.json.Json.Default.parseToJsonElement
+import kotlinx.serialization.json.JsonElement
 
 private val logger = KotlinLogging.logger {}
 
@@ -80,9 +86,9 @@ class PactPluginService: PactPluginGrpc.PactPluginImplBase() {
       return
     }
 
-    when(parseSchema(rawSchema)) {
+    when(parseSchema(rawSchema.stringValue)) {
       is ParseResult.Failure -> {
-        val (error, exception) = parseSchema(rawSchema) as ParseResult.Failure
+        val (error, exception) = parseSchema(rawSchema.stringValue) as ParseResult.Failure
         logger.error(exception) { error }
         responseObserver.onError(INVALID_ARGUMENT.withDescription(error).asException())
         return
@@ -117,16 +123,29 @@ class PactPluginService: PactPluginGrpc.PactPluginImplBase() {
     request: Plugin.CompareContentsRequest,
     responseObserver: StreamObserver<CompareContentsResponse>,
   ) {
-    val rawSchema = request.pluginConfiguration.interactionConfiguration.fieldsMap["schema"]
-    if (rawSchema == null) {
-      logger.error { "Schema not provided" }
-      responseObserver.onError(INVALID_ARGUMENT.withDescription("Schema not provided").asException())
+    if (request.actual.contentType != "application/avro-message-schema-json") {
+      logger.error { "Unsupported content type: ${request.actual.contentType}" }
+      responseObserver.onError(INVALID_ARGUMENT.withDescription("Unsupported content type, supported 'application/avro-message-schema-json'").asException())
       return
     }
 
-    val actualMessage = request.actual.content.value.toString(Charsets.UTF_8);
+    val rawConsumerSchema = request.pluginConfiguration.interactionConfiguration.fieldsMap["schema"]
+    if (rawConsumerSchema == null) {
+      logger.error { "Consumer schema not provided" }
+      responseObserver.onError(INVALID_ARGUMENT.withDescription("Consumer schema not provided").asException())
+      return
+    }
 
-    val schema = when(val parsedSchema = parseSchema(rawSchema)) {
+    val actual = decodeFromString<AvroDatumWithSchema>(request.actual.content.value.toString(Charsets.UTF_8))
+
+    val rawProviderSchema = actual.schema
+    if (rawProviderSchema == null) {
+      logger.error { "Provider schema not provided" }
+      responseObserver.onError(INVALID_ARGUMENT.withDescription("Provider schema not provided").asException())
+      return
+    }
+
+    val consumerSchema = when(val parsedSchema = parseSchema(rawConsumerSchema.stringValue)) {
       is ParseResult.Failure -> {
         logger.error(parsedSchema.exception) { parsedSchema.error }
         responseObserver.onError(INVALID_ARGUMENT.withDescription(parsedSchema.error).asException())
@@ -135,10 +154,19 @@ class PactPluginService: PactPluginGrpc.PactPluginImplBase() {
       is Success -> parsedSchema.schema
     }
 
-    val reader = GenericDatumReader<GenericRecord>(schema)
+    val providerSchema = when(val parsedSchema = parseSchema(rawProviderSchema.toString())) {
+      is ParseResult.Failure -> {
+        logger.error(parsedSchema.exception) { parsedSchema.error }
+        responseObserver.onError(INVALID_ARGUMENT.withDescription(parsedSchema.error).asException())
+        return
+      }
+      is Success -> parsedSchema.schema
+    }
+
+    val reader = GenericDatumReader<GenericRecord>(providerSchema, consumerSchema)
 
     try {
-      val decoder = DecoderFactory.get().jsonDecoder(schema, actualMessage)
+      val decoder = DecoderFactory.get().jsonDecoder(providerSchema, actual.datum.toString())
       reader.read(null, decoder)
       responseObserver.onNext(CompareContentsResponse.newBuilder().build())
       responseObserver.onCompleted()
@@ -153,13 +181,16 @@ class PactPluginService: PactPluginGrpc.PactPluginImplBase() {
 
   }
 
-  private fun parseSchema(rawSchema: Value): ParseResult = try {
-      Success(Schema.Parser().parse(rawSchema.stringValue))
+  private fun parseSchema(rawSchema: String): ParseResult = try {
+      Success(Schema.Parser().parse(rawSchema))
   } catch (e: Exception) {
       ParseResult.Failure("Failed to parse schema", e)
   }
 
 }
+
+@Serializable
+data class AvroDatumWithSchema(val datum: JsonElement, val schema: JsonElement?)
 
 sealed interface ParseResult {
   data class Success(val schema: Schema) : ParseResult
