@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version "1.9.22"
-    kotlin("plugin.serialization") version "1.9.22"
+    kotlin("jvm") version "2.0.0"
+    kotlin("plugin.serialization") version "2.0.0"
     id("application")
 }
 
@@ -11,10 +11,10 @@ repositories {
     mavenCentral()
 }
 
-val grpcVersion = "1.62.2"
+val grpcVersion = "1.65.0"
 
 dependencies {
-    implementation("io.github.oshai:kotlin-logging:6.0.3")
+    implementation("io.github.oshai:kotlin-logging:7.0.0")
 
     implementation("org.apache.avro:avro:1.11.3")
 
@@ -25,7 +25,7 @@ dependencies {
     implementation("io.grpc:grpc-stub:$grpcVersion")
     implementation("io.grpc:grpc-netty:$grpcVersion")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
