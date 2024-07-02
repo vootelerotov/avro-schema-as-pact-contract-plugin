@@ -166,7 +166,7 @@ class PactPluginService: PactPluginGrpc.PactPluginImplBase() {
     val reader = GenericDatumReader<GenericRecord>(providerSchema, consumerSchema)
 
     try {
-      val decoder = DecoderFactory.get().jsonDecoder(providerSchema, actual.datum.toString())
+      val decoder = DecoderFactory.get().binaryDecoder(actual.datum, null)
       reader.read(null, decoder)
       responseObserver.onNext(CompareContentsResponse.newBuilder().build())
       responseObserver.onCompleted()
@@ -190,7 +190,7 @@ class PactPluginService: PactPluginGrpc.PactPluginImplBase() {
 }
 
 @Serializable
-data class AvroDatumWithSchema(val datum: JsonElement, val schema: JsonElement?)
+data class AvroDatumWithSchema(val datum: ByteArray, val schema: JsonElement?)
 
 sealed interface ParseResult {
   data class Success(val schema: Schema) : ParseResult
