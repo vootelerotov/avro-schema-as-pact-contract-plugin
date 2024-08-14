@@ -18,7 +18,7 @@ The contract is then that the producer will send messages that can be deserializ
 
 ## Usage
 
-Make sure you have the Pact plugin installed in your project. On the consider side, create the pact as follow:
+Make sure you have the Pact plugin installed in your project. On the consumer side, create the pact as follow:
 ```java
 V4Pact pact = new PactBuilder(consumer, provider, V4)
         .usingPlugin("avro-schema-as-pact-contract")
